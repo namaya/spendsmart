@@ -6,4 +6,4 @@ tasks:
       - uv pip install -e .
   run:
     cmds:
-      - python -m spendsmart.app
+      - python -m spendsmart.app {{.CLI_ARGS}}
