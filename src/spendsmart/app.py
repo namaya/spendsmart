@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 import sys
 
+from spendsmart.statements.parsers import QfxParser
 from spendsmart.utils import errctx
 
 
@@ -19,10 +20,16 @@ def index(file: Path):
     if not file.exists():
         raise FileNotFoundError(f"File not found.")
 
-    if not file.suffix == ".csv":
+    if file.suffix not in (".qfx",):
         raise ValueError(f"File format is not supported.")
 
     logger.info(f"Indexing file '{file}'.")
+
+    parser = QfxParser()
+
+    statement = parser.parse(file)
+
+    print(statement)
 
 
 if __name__ == "__main__":
