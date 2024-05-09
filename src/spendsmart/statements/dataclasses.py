@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 
 
@@ -10,7 +11,7 @@ class TransactionType(Enum):
 @dataclass
 class Transaction:
     type: TransactionType
-    date_posted: str
+    date_posted: datetime
     description: str
     amount: float
     balance: float
