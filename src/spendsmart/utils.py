@@ -18,9 +18,14 @@ def errctx(ctx: str):
 
                 merged_ctx = ctx.format(**bound_args.arguments)
 
-                raise (type(e))(f"{merged_ctx} {str(e)}").with_traceback(
-                    e.__traceback__
-                )
+                try:
+                    new_exception = (type(e))(f"{merged_ctx} {str(e)}").with_traceback(
+                        e.__traceback__
+                    )
+                except:
+                    raise e
+
+                raise new_exception
 
         return errctx_wrapper
 
