@@ -14,7 +14,6 @@ class Transaction:
     date_posted: datetime
     description: str
     amount: float
-    balance: float
 
 
 @dataclass
@@ -22,4 +21,13 @@ class Statement:
     account_number: str
     start_date: str
     end_date: str
+    transactions: list[Transaction]
+
+
+@dataclass
+class Account:
+    account_number: str
+    balance: float
+    available_balance: float
+    currency: str
     transactions: list[Transaction]

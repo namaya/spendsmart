@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-from spendsmart.statements.dataclasses import Statement, Transaction, TransactionType
+from spendsmart.domainmodels import Statement, Transaction, TransactionType
 
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,6 @@ class QfxParser:
                     date_posted=date_posted,
                     description=txn.find("NAME").text,
                     amount=float(txn.find("TRNAMT").text),
-                    balance=0,
                 )
             )
 

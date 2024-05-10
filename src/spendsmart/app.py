@@ -5,9 +5,12 @@ import sys
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
 
-from spendsmart.transactions.datamodels import TxnRow
+from spendsmart.datamodels.tables import TxnRow
+from spendsmart.datamodels.repos import TxnRepo
+from spendsmart.controllers import TxnController
 from spendsmart.statements.parsers import QfxParser
 from spendsmart.utils import errctx
+from spendsmart.views import SpendSmartApp
 
 
 logger = logging.getLogger(__name__)
@@ -16,9 +19,15 @@ engine = create_engine("sqlite+pysqlite:///:memory:", echo=True)
 
 
 def main():
+    # TODO: only index file if transactions are not already indexed
     if len(sys.argv) >= 2:
         index(Path(sys.argv[1]))
 
+    txn_repo = TxnRepo(engine)
+    txn_controller = TxnController(txn_repo)
+    app = SpendSmartApp(txn_controller)
+
+    app.run()
     # TODO: view transactions
     # * GOAL: categorize transactions
     # * allot budget for each category
