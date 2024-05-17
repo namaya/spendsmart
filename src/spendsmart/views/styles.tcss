@@ -2,18 +2,18 @@ Screen {
     align: center middle;
 }
 
-Horizontal {
+TxnWidget {
     width: 80%;
     height: 80%;
 }
 
-DataTable {
+TxnListView {
     padding: 1;
     border: solid $accent;
     width: 1fr;
 }
 
-Pretty {
+TxnView {
     width: 1fr;
     border: solid $accent;
 }

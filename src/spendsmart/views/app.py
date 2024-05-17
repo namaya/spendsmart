@@ -3,18 +3,66 @@ import locale
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
+from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import Header, Input, Footer, Pretty, DataTable, RichLog
+from textual.widgets import (
+    Header,
+    Input,
+    Footer,
+    ListView,
+    ListItem,
+    Pretty,
+    DataTable,
+    RichLog,
+)
 
 from spendsmart.controllers import TxnController
 from spendsmart.domainmodels import Transaction
 
 
+locale.setlocale(locale.LC_ALL, "")
+
+
+class TxnView(Widget):
+
+    class Escaped(Message):
+        def __init__(self):
+            super().__init__()
+
+    def __init__(self, txn: Transaction):
+        super().__init__()
+
+        self._pretty = Pretty(txn)
+        self._merchant_input = Input(txn.description, placeholder="Merchant")
+        self._category_input = Input(txn.description, placeholder="Category")
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield self._pretty
+            yield ListView(
+                ListItem(self._merchant_input),
+                ListItem(self._category_input),
+            )
+
+    def update(self, txn: Transaction) -> None:
+        self._pretty.update(txn)
+        self._merchant_input.value = txn.description
+        self._category_input.value = txn.description
+
+    def on_key(self, event: events.Key) -> None:
+        if event.name == "escape":
+            self.post_message(self.Escaped())
+
+    def focus(self) -> None:
+        self._merchant_input.focus()
+
+
 class TxnListView(DataTable):
-    def __init__(self, txns: list[Transaction]):
+    def __init__(self, txns: list[Transaction], txnview: TxnView):
         super().__init__()
 
         self._viewable_txns = txns
+        self._static_txn_view = txnview
 
         self.cursor_type = "row"
 
@@ -24,50 +72,46 @@ class TxnListView(DataTable):
         elif event.name == "k":
             self.action_cursor_up()
         elif event.name == "l":
-            self.focus()
+            self._static_txn_view.focus()
 
     def on_mount(self) -> None:
         self.add_columns(*["Date", "Description", "Amount"])
-        self.add_rows([TxnView(txn).to_datatable_row() for txn in self._viewable_txns])
 
-    # def update_highlighted_view(self) -> None:
-    #     self.query_one(Pretty).update(self._txns[index])
+        self.add_rows(
+            [
+                (
+                    txn.datestamp.strftime("%m/%d/%Y"),
+                    txn.description,
+                    locale.currency(float(txn.amount) / 100, grouping=True),
+                )
+                for txn in self._viewable_txns
+            ]
+        )
 
 
 class TxnWidget(Widget):
+
     def __init__(self, txncontrol: TxnController):
         super().__init__()
 
         self._txncontrol = txncontrol
         self._viewable_txns = txncontrol.fetch_txns(10)
 
+        self._txnview = TxnView(self._viewable_txns[0])
+        self._txnlistview = TxnListView(self._viewable_txns, self._txnview)
+
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield TxnListView(self._viewable_txns)
-            with Vertical():
-                yield Pretty([])
-                yield Input(placeholder="Merchant")
-                yield Input(placeholder="Category")
+            yield self._txnlistview
+            yield self._txnview
 
     @on(TxnListView.RowHighlighted)
     def view_highlighted_txn(self) -> None:
-        txnlist = self.query_one(TxnListView)
-        idx = txnlist.cursor_row
+        self._txnview.update(self._viewable_txns[self._txnlistview.cursor_row])
 
-        self.query_one(Pretty).update(self._viewable_txns[idx])
-
-
-class TxnView:
-    def __init__(self, txn: Transaction):
-        self._txn_details = txn
-
-    def to_datatable_row(self) -> tuple:
-        locale.setlocale(locale.LC_ALL, "")
-        return (
-            self._txn_details.datestamp.strftime("%m/%d/%Y"),
-            self._txn_details.description,
-            locale.currency(float(self._txn_details.amount) / 100, grouping=True),
-        )
+    @on(TxnView.Escaped)
+    def focus_txnviewlist(self) -> None:
+        self._txnlistview.focus()
 
 
 class SpendSmartApp(App):
