@@ -29,12 +29,12 @@ class TxnView(Widget):
         def __init__(self):
             super().__init__()
 
-    def __init__(self, txn: Transaction):
+    def __init__(self):
         super().__init__()
 
-        self._pretty = Pretty(txn)
-        self._merchant_input = Input(txn.description, placeholder="Merchant")
-        self._category_input = Input(txn.description, placeholder="Category")
+        self._pretty = Pretty([])
+        self._merchant_input = Input(placeholder="Merchant")
+        self._category_input = Input(placeholder="Category")
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -58,11 +58,11 @@ class TxnView(Widget):
 
 
 class TxnListView(DataTable):
-    def __init__(self, txns: list[Transaction], txnview: TxnView):
+
+    def __init__(self, txns: list[Transaction]):
         super().__init__()
 
         self._viewable_txns = txns
-        self._static_txn_view = txnview
 
         self.cursor_type = "row"
 
@@ -72,7 +72,7 @@ class TxnListView(DataTable):
         elif event.name == "k":
             self.action_cursor_up()
         elif event.name == "l":
-            self._static_txn_view.focus()
+            self.action_select_cursor()
 
     def on_mount(self) -> None:
         self.add_columns(*["Date", "Description", "Amount"])
@@ -97,8 +97,8 @@ class TxnWidget(Widget):
         self._txncontrol = txncontrol
         self._viewable_txns = txncontrol.fetch_txns(10)
 
-        self._txnview = TxnView(self._viewable_txns[0])
-        self._txnlistview = TxnListView(self._viewable_txns, self._txnview)
+        self._txnview = TxnView()
+        self._txnlistview = TxnListView(self._viewable_txns)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -108,6 +108,10 @@ class TxnWidget(Widget):
     @on(TxnListView.RowHighlighted)
     def view_highlighted_txn(self) -> None:
         self._txnview.update(self._viewable_txns[self._txnlistview.cursor_row])
+
+    @on(TxnListView.RowSelected)
+    def focus_txnview(self) -> None:
+        self._txnview.focus()
 
     @on(TxnView.Escaped)
     def focus_txnviewlist(self) -> None:
