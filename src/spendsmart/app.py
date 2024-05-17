@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    engine = create_engine("sqlite+pysqlite:///:memory:", echo=True)
+    engine = create_engine("sqlite+pysqlite:///test.db", echo=True)
     txn_repo = TxnRepo(engine)
     txn_controller = TxnController(txn_repo)
 

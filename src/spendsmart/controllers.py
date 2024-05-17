@@ -16,7 +16,7 @@ class TxnController:
     def __init__(self, txn_repo: TxnRepo):
         self._txn_repo = txn_repo
 
-    def list(self, limit: int = None, offset: int = 0) -> list[Transaction]:
+    def fetch_txns(self, limit: int = None, offset: int = 0) -> list[Transaction]:
         return self._txn_repo.fetch(limit, offset)
 
     @errctx("Couldn't index file '{file}'.")

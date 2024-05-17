@@ -33,8 +33,6 @@ class TxnRepo:
     def add(self, txns: list[Transaction]):
         with Session(self._db_engine) as session:
             for txn in txns:
-                row = TxnRow.from_model(txn)
-
-                session.add(row)
+                session.merge(TxnRow.from_model(txn))
 
             session.commit()
