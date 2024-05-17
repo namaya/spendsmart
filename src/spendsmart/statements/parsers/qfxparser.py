@@ -31,20 +31,17 @@ class QfxParser:
         for txn in stmtroot.find("BANKTRANLIST").findall("STMTTRN"):
             txn_type = txn.find("TRNTYPE").text
 
+            datestamp = datetime.strptime(txn.find("DTUSER").text, "%Y%m%d%H%M%S.%f")
             date_posted = datetime.strptime(
                 txn.find("DTPOSTED").text, "%Y%m%d%H%M%S.%f"
             )
 
             transactions.append(
                 Transaction(
-                    type=(
-                        TransactionType.CREDIT
-                        if txn_type == "CREDIT"
-                        else TransactionType.DEBIT
-                    ),
+                    datestamp=datestamp,
                     date_posted=date_posted,
                     description=txn.find("NAME").text,
-                    amount=float(txn.find("TRNAMT").text),
+                    amount=int(txn.find("TRNAMT").text.replace(".", "")),
                 )
             )
 

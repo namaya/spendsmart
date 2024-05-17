@@ -22,7 +22,7 @@ class TxnRepo:
         with Session(self._db_engine) as session:
             cursor = (
                 session.query(TxnRow)
-                .order_by(TxnRow.timestamp.desc())
+                .order_by(TxnRow.datestamp.desc())
                 .limit(limit)
                 .offset(offset)
                 .all()

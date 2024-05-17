@@ -8,12 +8,12 @@ class TransactionType(Enum):
     CREDIT = "CREDIT"
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Transaction:
-    type: TransactionType
+    datestamp: datetime
     date_posted: datetime
     description: str
-    amount: float
+    amount: int
 
 
 @dataclass
