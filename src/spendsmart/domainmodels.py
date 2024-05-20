@@ -14,6 +14,8 @@ class Transaction:
     date_posted: datetime
     description: str
     amount: int
+    merchant: str = ""
+    category: str = ""
 
 
 @dataclass
